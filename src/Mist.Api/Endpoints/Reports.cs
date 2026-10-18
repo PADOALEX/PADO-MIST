@@ -36,7 +36,9 @@ public static class Reports
                 var outcome = (string?)f["outcomeId"] ?? "";
                 Workflow.Require(Workflow.Outcomes.ContainsKey(outcome), "Unknown outcome.");
                 Workflow.Require(double.TryParse(f["hours"], NumberStyles.Float, CultureInfo.InvariantCulture, out var hours) && double.IsFinite(hours) && hours >= .5 && hours <= 160, "Hours must be between 0.5 and 160.");
-                Workflow.Require(DateOnly.TryParseExact(f["from"], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from) && DateOnly.TryParseExact(f["to"], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var to) && from <= to && to <= DateOnly.FromDateTime(DateTime.UtcNow), "Invalid reporting period.");
+                var validFrom = DateOnly.TryParseExact(f["from"], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var from);
+                var validTo = DateOnly.TryParseExact(f["to"], "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var to);
+                Workflow.Require(validFrom && validTo && from <= to && to <= DateOnly.FromDateTime(DateTime.UtcNow), "Invalid reporting period.");
                 var summary = Workflow.Text(f["summary"], 30, 3000);
                 var evidence = Workflow.Text(f["evidence"], 15, 2000);
                 var report = await db.Reports.SingleOrDefaultAsync(x => x.CaseId == caseId && x.OutcomeId == outcome, ct);
