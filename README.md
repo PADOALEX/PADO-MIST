@@ -1,10 +1,12 @@
 # PADO MIST
 
+[![Build and test](https://github.com/PADOALEX/PADO-MIST/actions/workflows/ci.yml/badge.svg)](https://github.com/PADOALEX/PADO-MIST/actions/workflows/ci.yml)
+
 ### University Workflow Management Platform · ASP.NET Core / EF Core / PostgreSQL
 
 **PADO MIST** evolves my PolyTECH Bootcamp browser prototype, *Міст*, into a server-backed academic-workflow demo. It focuses on **state machines, resource authorization, immutable report versions, approval ordering and auditability** rather than simulated role switching.
 
-> **Status: MVP implementation / verification pending.** The original JavaScript prototype passes its existing tests. The new .NET 10 backend has been written but could not be compiled or executed in the development environment that produced this repository because the .NET SDK and Docker were unavailable. **Do not interpret this README as a passing backend build or a production deployment.** Run `dotnet test` and the Docker smoke test before treating this as a verified portfolio release.
+> **Status: verified educational MVP (not production-ready).** GitHub Actions completed the .NET 10 Release build with **0 compiler warnings**, **6 xUnit tests**, **18 original JavaScript tests**, and an isolated **Docker/PostgreSQL API smoke suite** covering authorization, document transitions, case approval, versioned reports, evidence downloads and final completion. Browser-level visual QA, load testing and real-world security review remain out of scope.
 
 ## What it demonstrates
 
