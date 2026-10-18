@@ -1,0 +1,39 @@
+name: pado-mist
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: mist
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: mist
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mist -d mist"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+  api:
+    build:
+      context: .
+      dockerfile: src/Mist.Api/Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Mist: Host=db;Port=5432;Database=mist;Username=mist;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      MIST_JWT_KEY: ${MIST_JWT_KEY:?Set MIST_JWT_KEY}
+      MIST_SEED_DEMO: "true"
+      MIST_DEMO_PASSWORD: ${MIST_DEMO_PASSWORD:?Set MIST_DEMO_PASSWORD}
+      MIST_FILE_DIR: /app/private-uploads
+    volumes:
+      - attachments:/app/private-uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  attachments:

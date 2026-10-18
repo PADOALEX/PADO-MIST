@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.vs/
+**/.vscode/
+.env
+.env.*
+!.env.example
+**/private-uploads/
+**/TestResults/
+*.user
+.DS_Store

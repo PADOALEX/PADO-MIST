@@ -1,0 +1,45 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore tests/Mist.Api.Tests/Mist.Api.Tests.csproj
+      - run: dotnet build tests/Mist.Api.Tests/Mist.Api.Tests.csproj -c Release --no-restore
+      - run: dotnet test tests/Mist.Api.Tests/Mist.Api.Tests.csproj -c Release --no-build
+      - run: dotnet publish src/Mist.Api/Mist.Api.csproj -c Release --no-restore -o ./publish
+  prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm --prefix legacy/Mist_Prototype run check
+      - run: npm --prefix legacy/Mist_Prototype test
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure isolated demo credentials
+        run: |
+          echo "POSTGRES_PASSWORD=$(openssl rand -hex 20)" >> "$GITHUB_ENV"
+          echo "MIST_JWT_KEY=$(openssl rand -hex 40)" >> "$GITHUB_ENV"
+          echo "MIST_DEMO_PASSWORD=$(openssl rand -hex 20)" >> "$GITHUB_ENV"
+      - name: Start Compose stack
+        run: docker compose up --build --wait -d
+      - name: Exercise authorization and workflows
+        run: python3 tests/api_smoke.py
+      - name: Shutdown
+        if: always()
+        run: docker compose down -v
