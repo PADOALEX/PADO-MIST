@@ -38,8 +38,26 @@ jobs:
           echo "MIST_DEMO_PASSWORD=$(openssl rand -hex 20)" >> "$GITHUB_ENV"
       - name: Start Compose stack
         run: docker compose up --build --wait -d
+      - name: Wait for API readiness
+        run: |
+          python3 - <<'PYWAIT'
+          import time,urllib.request
+          for attempt in range(45):
+              try:
+                  with urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2) as resp:
+                      if resp.status == 200:
+                          print('API ready')
+                          break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise RuntimeError('API did not become ready')
+          PYWAIT
       - name: Exercise authorization and workflows
         run: python3 tests/api_smoke.py
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=160
       - name: Shutdown
         if: always()
         run: docker compose down -v
